@@ -4,17 +4,24 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build src/background.ts src/content.ts --outdir dist --target=browser",
-    "dev": "bun build src/background.ts src/content.ts --outdir dist --watch --target=browser",
-    "bundle": "./bundle_dist.sh"
+    "build": "bun build src/background.ts src/content.ts src/popup.ts --outdir dist --target=browser",
+    "dev": "bun build src/background.ts src/content.ts src/popup.ts --outdir dist --watch --target=browser",
+    "bundle": "./bundle_dist.sh",
+    "lint": "bunx eslint src --ext .ts",
+    "format": "bunx prettier --write src",
+    "format:check": "bunx prettier --check src"
   },
   "dependencies": {
-    "turndown": "^7.2.0"
+    "jszip": "^3.10.1",
+    "turndown": "^7.2.2"
   },
   "devDependencies": {
+    "eslint": "^9.39.1",
     "@types/bun": "latest",
     "@types/chrome": "^0.1.32",
-    "@types/turndown": "^5.0.5"
+    "@types/turndown": "^5.0.6",
+    "@typescript-eslint/eslint-plugin": "^8.48.1",
+    "@typescript-eslint/parser": "^8.48.1"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

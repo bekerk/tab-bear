@@ -6,6 +6,8 @@ echo "Bundling extension..."
 mkdir -p dist
 
 cp manifest.json dist/
+cp src/popup.html dist/
+
 bun run build
 
 echo "Bundle created in dist/"
