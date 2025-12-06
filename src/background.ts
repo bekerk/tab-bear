@@ -147,6 +147,13 @@ chrome.runtime.onInstalled.addListener(() => {
   void ensureDefaults();
 });
 
+// Show welcome page on install
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.tabs.create({
+    url: "welcome.html",
+  });
+});
+
 // Message handling
 chrome.runtime.onMessage.addListener(
   (msg: unknown, sender: chrome.runtime.MessageSender) => {
@@ -159,6 +166,7 @@ chrome.runtime.onMessage.addListener(
 
         case "STOP_SESSION":
           await handleStopSession();
+          await handleDownloadSession();
           break;
 
         case "DOWNLOAD_SESSION":

@@ -6,7 +6,8 @@ echo "Bundling extension..."
 mkdir -p dist
 
 cp manifest.json dist/
-cp src/popup.html dist/
+cp src/*.html dist/
+cp -r assets dist/
 
 bun run build
 

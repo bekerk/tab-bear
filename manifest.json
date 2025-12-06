@@ -25,5 +25,11 @@
     "action": {
         "default_popup": "popup.html"
     },
+    "web_accessible_resources": [
+        {
+            "resources": ["welcome.html"],
+            "matches": ["<all_urls>"]
+        }
+    ],
     "icons": {}
 }
