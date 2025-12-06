@@ -31,12 +31,15 @@ const maybeSendMarkdown = async () => {
   if (activeSession !== true) return;
 
   try {
-    const markdown = extractMarkdown();
-    chrome.runtime.sendMessage({
-      type: "CACHE_MARKDOWN",
-      markdown,
-      url: location.href,
-    });
+    // ugly, fix later
+    setTimeout(() => {
+      const markdown = extractMarkdown();
+      chrome.runtime.sendMessage({
+        type: "CACHE_MARKDOWN",
+        markdown,
+        url: location.href,
+      });
+    }, 5000);
   } catch (err) {
     console.error("Failed to capture markdown", err);
   }
