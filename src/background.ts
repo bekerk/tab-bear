@@ -20,17 +20,23 @@ const setLocal = (items: Record<string, unknown>) =>
   });
 
 const ensureDefaults = async () => {
-  const { activeSession, cache } = await getLocal<{
+  const { activeSession, cache, pagesCount } = await getLocal<{
     activeSession?: unknown;
     cache?: unknown;
-  }>(["activeSession", "cache"]);
+    pagesCount?: unknown;
+  }>(["activeSession", "cache", "pagesCount"]);
 
   const updates: Record<string, unknown> = {};
+  const cacheArray = Array.isArray(cache) ? (cache as CacheEntry[]) : [];
+
   if (typeof activeSession !== "boolean") {
     updates.activeSession = false;
   }
   if (!Array.isArray(cache)) {
     updates.cache = [] as CacheEntry[];
+  }
+  if (typeof pagesCount !== "number") {
+    updates.pagesCount = cacheArray.length;
   }
 
   if (Object.keys(updates).length) {
@@ -46,7 +52,7 @@ const updateCache = (updater: (cache: CacheEntry[]) => CacheEntry[]) => {
       const { cache } = await getLocal<{ cache?: unknown }>("cache");
       const current = Array.isArray(cache) ? (cache as CacheEntry[]) : [];
       const next = updater(current);
-      await setLocal({ cache: next });
+      await setLocal({ cache: next, pagesCount: next.length });
     })
     .catch((err) => {
       console.error("Failed to update cache", err);
