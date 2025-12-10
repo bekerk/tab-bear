@@ -99,6 +99,10 @@ const handleDownloadSession = async () => {
   await downloadCache();
 };
 
+const handleClearSession = async () => {
+  await setLocal({ cache: [], pagesCount: 0 });
+}
+
 const isCacheMarkdownMessage = (
   msg: unknown,
 ): msg is Extract<Message, { type: "CACHE_MARKDOWN" }> => {
@@ -173,6 +177,7 @@ chrome.runtime.onMessage.addListener(
         case "STOP_SESSION":
           await handleStopSession();
           await handleDownloadSession();
+          await handleClearSession();
           break;
 
         case "DOWNLOAD_SESSION":
