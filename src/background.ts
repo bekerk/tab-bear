@@ -1,5 +1,3 @@
-import JSZip from "jszip";
-
 type CacheEntry = { url: string; markdown: string; timestamp: number };
 type Message =
   | { type: "START_SESSION" }
@@ -61,6 +59,15 @@ const updateCache = (updater: (cache: CacheEntry[]) => CacheEntry[]) => {
   return cacheUpdateQueue;
 };
 
+const encodeBase64 = (text: string) => {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+};
+
 const downloadCache = async () => {
   const { cache } = await getLocal<{ cache?: unknown }>("cache");
   const entries = Array.isArray(cache) ? (cache as CacheEntry[]) : [];
@@ -70,17 +77,19 @@ const downloadCache = async () => {
     return;
   }
 
-  const zip = new JSZip();
+  let file_buffer = "<session>\n\n";
   for (const entry of entries) {
-    zip.file(`${entry.timestamp}.md`, entry.markdown);
+    file_buffer += `<page url="${entry.url}">\n`;
+    file_buffer += `${entry.markdown}\n`;
+    file_buffer += `</page>\n\n`;
   }
+  file_buffer += `</session>\n`;
 
-  const zipBase64 = await zip.generateAsync({ type: "base64" });
-  const url = `data:application/zip;base64,${zipBase64}`;
+  const base64 = encodeBase64(file_buffer);
 
   chrome.downloads.download({
-    url,
-    filename: "tab-bear-session.zip",
+    url: `data:text/plain;charset=utf-8;base64,${base64}`,
+    filename: "tab-bear-session.txt",
     saveAs: true,
   });
 };
@@ -101,7 +110,7 @@ const handleDownloadSession = async () => {
 
 const handleClearSession = async () => {
   await setLocal({ cache: [], pagesCount: 0 });
-}
+};
 
 const isCacheMarkdownMessage = (
   msg: unknown,

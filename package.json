@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@material/web": "^2.4.1",
-    "jszip": "^3.10.1",
     "preact": "^10.28.0",
     "turndown": "^7.2.2"
   },
