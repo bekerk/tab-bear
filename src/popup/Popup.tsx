@@ -114,6 +114,9 @@ export const Popup = () => {
           <button type="button" class="btn btn-primary" onClick={stopSession}>
             Stop Session
           </button>
+          <button type="button" class="btn btn-secondary" onClick={openEditor}>
+            Preview Data
+          </button>
         </div>
       </div>
     );
