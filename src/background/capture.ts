@@ -31,9 +31,13 @@ const executeContentScript = async (tabId: number): Promise<void> => {
 
 const sendDeactivate = async (tabId: number): Promise<void> => {
   await new Promise<void>((resolve) => {
-    chrome.tabs.sendMessage(tabId, { type: "DEACTIVATE_CONTENT" }, () =>
-      resolve(),
-    );
+    chrome.tabs.sendMessage(tabId, { type: "DEACTIVATE_CONTENT" }, () => {
+      // If the tab doesn't have our content script (or is a restricted page),
+      // Chrome will set lastError. This is expected during broad deactivation.
+      // We must read it to avoid "Unchecked runtime.lastError" console noise.
+      void chrome.runtime.lastError;
+      resolve();
+    });
   });
 };
 
