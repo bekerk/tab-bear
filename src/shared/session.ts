@@ -62,3 +62,20 @@ export const serializeSession = (entries: CacheEntry[]): string => {
   content += "</session>\n";
   return content;
 };
+
+export const shouldPreferDownload = (
+  pageCount: number,
+  contentLength: number,
+): boolean => {
+  return pageCount > 10 && contentLength > 50000;
+};
+
+export const downloadSession = (content: string): void => {
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `tab-bear-session-${new Date().toISOString().split("T")[0]}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+};

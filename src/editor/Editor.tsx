@@ -1,16 +1,19 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   serializeSession,
   estimateTokens,
   formatTokenCount,
+  shouldPreferDownload,
+  downloadSession,
 } from "../shared/session";
 import { getCacheEntries, setCacheEntries } from "../shared/chromeApi";
 import type { CacheEntry } from "../shared/types";
+import { CopyButton } from "../shared/CopyButton";
 
 export const Editor = () => {
   const [pages, setPages] = useState<CacheEntry[]>([]);
   const [activeTab, setActiveTab] = useState(0);
-  const [copied, setCopied] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
@@ -89,25 +92,6 @@ export const Editor = () => {
     };
   }, [pages]);
 
-  // const downloadAll = () => {
-  //   if (pages.length === 0) return;
-
-  //   const blob = new Blob([serializeSession(pages)], { type: "text/plain" });
-  //   const url = URL.createObjectURL(blob);
-  //   const a = document.createElement("a");
-  //   a.href = url;
-  //   a.download = SESSION_FILENAME;
-  //   a.click();
-  //   URL.revokeObjectURL(url);
-  // };
-
-  const copyToClipboard = async () => {
-    const text = serializeSession(pages);
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const syncScroll = () => {
     if (textareaRef.current && lineNumbersRef.current) {
       lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
@@ -118,6 +102,44 @@ export const Editor = () => {
     if (textareaRef.current) textareaRef.current.scrollTop = 0;
     if (lineNumbersRef.current) lineNumbersRef.current.scrollTop = 0;
   }, [activeTab]);
+
+  // Handle Cmd+C / Ctrl+C keyboard shortcut
+  useEffect(() => {
+    const handleKeyboardShortcut = (event: KeyboardEvent) => {
+      const isCopyShortcut =
+        event.key === "c" && (event.metaKey || event.ctrlKey);
+
+      if (!isCopyShortcut || pages.length === 0) {
+        return;
+      }
+
+      // Don't override copy if user has text selected
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      void (async () => {
+        try {
+          const text = serializeSession(pages);
+          await navigator.clipboard.writeText(text);
+          setShowToast(true);
+          setTimeout(() => {
+            setShowToast(false);
+          }, 2000);
+        } catch (error) {
+          console.error("Failed to copy to clipboard:", error);
+        }
+      })();
+    };
+
+    document.addEventListener("keydown", handleKeyboardShortcut);
+    return () =>
+      document.removeEventListener("keydown", handleKeyboardShortcut);
+  }, [pages]);
 
   if (pages.length === 0) {
     return (
@@ -137,100 +159,133 @@ export const Editor = () => {
 
   const activePage = pages[activeTab]!;
   const lineCount = activePage.markdown.split("\n").length;
-  const tokenCount = estimateTokens(serializeSession(pages));
+
+  const sessionContent = useMemo(() => serializeSession(pages), [pages]);
+  const tokenCount = useMemo(
+    () => estimateTokens(sessionContent),
+    [sessionContent],
+  );
+  const preferDownload = shouldPreferDownload(
+    pages.length,
+    sessionContent.length,
+  );
 
   return (
-    <div class="editor-container">
-      <div class="editor-header">
-        <div class="editor-title">
-          <h1>Tab Bear</h1>
-          <span class="editor-stats">
-            {pages.length} pages • ~{formatTokenCount(tokenCount)} tokens
-          </span>
+    <>
+      {showToast && (
+        <div class="toast-notification">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ flexShrink: 0 }}
+          >
+            <circle cx="10" cy="10" r="10" fill="currentColor" opacity="0.2" />
+            <path
+              d="M6 10L8.5 12.5L14 7"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>MUNCH! Copied everything to clipboard.</span>
         </div>
-        <div class="editor-actions">
-          <span
-            class={`save-status ${
-              saveStatus === "error"
-                ? "error"
-                : saveStatus === "saving"
-                  ? "saving"
-                  : saveStatus === "saved"
-                    ? "saved"
-                    : ""
-            }`}
-            aria-live="polite"
-          >
-            {saveStatus === "saving"
-              ? "Saving…"
-              : saveStatus === "saved"
-                ? "Saved"
-                : saveStatus === "error"
-                  ? "Save failed"
-                  : ""}
-          </span>
-          <button
-            type="button"
-            class="btn btn-primary"
-            style={{ minWidth: "120px" }}
-            onClick={() => void copyToClipboard()}
-          >
-            {copied ? "✓ Copied!" : "Copy All"}
-          </button>
-          {/* <button type="button" class="btn btn-secondary" onClick={downloadAll}>
-            Download All
-          </button> */}
-        </div>
-      </div>
-
-      <div class="tabs-bar">
-        {pages.map((page, index) => (
-          <button
-            type="button"
-            key={page.url + page.timestamp}
-            class={`tab ${index === activeTab ? "tab-active" : ""}`}
-            onClick={() => setActiveTab(index)}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </div>
-
-      <div class="page-card">
-        <div class="page-header">
-          <a
-            class="page-url"
-            href={activePage.url}
-            target="_blank"
-            rel="noopener"
-          >
-            {activePage.url}
-          </a>
-          <button
-            type="button"
-            class="btn btn-danger btn-icon"
-            onClick={() => deletePage(activeTab)}
-          >
-            Delete Page
-          </button>
-        </div>
-        <div class="editor-wrapper">
-          <div class="line-numbers" ref={lineNumbersRef}>
-            {Array.from({ length: lineCount }, (_, i) => (
-              <div key={i}>{i + 1}</div>
-            ))}
+      )}
+      <div class="editor-container">
+        <div class="editor-header">
+          <div class="editor-title">
+            <h1>Tab Bear</h1>
+            <span class="editor-stats">
+              {pages.length} pages • ~{formatTokenCount(tokenCount)} tokens
+            </span>
           </div>
-          <textarea
-            ref={textareaRef}
-            class="page-textarea"
-            value={activePage.markdown}
-            onInput={(e) =>
-              updatePage(activeTab, (e.target as HTMLTextAreaElement).value)
-            }
-            onScroll={syncScroll}
-          />
+          <div class="editor-actions">
+            <span
+              class={`save-status ${
+                saveStatus === "error"
+                  ? "error"
+                  : saveStatus === "saving"
+                    ? "saving"
+                    : saveStatus === "saved"
+                      ? "saved"
+                      : ""
+              }`}
+              aria-live="polite"
+            >
+              {saveStatus === "saving"
+                ? "Saving…"
+                : saveStatus === "saved"
+                  ? "Saved"
+                  : saveStatus === "error"
+                    ? "Save failed"
+                    : ""}
+            </span>
+            <CopyButton
+              content={sessionContent}
+              label={preferDownload ? "Download Session" : "Copy to Clipboard"}
+              copiedLabel={preferDownload ? "✓ Downloaded!" : "✓ Copied!"}
+              onDownload={
+                preferDownload
+                  ? () => downloadSession(sessionContent)
+                  : undefined
+              }
+              style={{ minWidth: "160px" }}
+            />
+          </div>
+        </div>
+
+        <div class="tabs-bar">
+          {pages.map((page, index) => (
+            <button
+              type="button"
+              key={page.url + page.timestamp}
+              class={`tab ${index === activeTab ? "tab-active" : ""}`}
+              onClick={() => setActiveTab(index)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+
+        <div class="page-card">
+          <div class="page-header">
+            <a
+              class="page-url"
+              href={activePage.url}
+              target="_blank"
+              rel="noopener"
+            >
+              {activePage.url}
+            </a>
+            <button
+              type="button"
+              class="btn btn-danger btn-icon"
+              onClick={() => deletePage(activeTab)}
+            >
+              Delete Page
+            </button>
+          </div>
+          <div class="editor-wrapper">
+            <div class="line-numbers" ref={lineNumbersRef}>
+              {Array.from({ length: lineCount }, (_, i) => (
+                <div key={i}>{i + 1}</div>
+              ))}
+            </div>
+            <textarea
+              ref={textareaRef}
+              class="page-textarea"
+              value={activePage.markdown}
+              onInput={(e) =>
+                updatePage(activeTab, (e.target as HTMLTextAreaElement).value)
+              }
+              onScroll={syncScroll}
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };

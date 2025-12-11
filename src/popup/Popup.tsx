@@ -4,8 +4,11 @@ import {
   serializeSession,
   estimateTokens,
   formatTokenCount,
+  shouldPreferDownload,
+  downloadSession,
 } from "../shared/session";
 import type { SessionState } from "../shared/types";
+import { CopyButton } from "../shared/CopyButton";
 
 const formatDuration = (startTime: number | null): string => {
   if (!startTime) return "0:00";
@@ -23,7 +26,7 @@ export const Popup = () => {
   });
   const [duration, setDuration] = useState("0:00");
   const [tokenCount, setTokenCount] = useState<number>(0);
-  const [copied, setCopied] = useState(false);
+  const [serializedContent, setSerializedContent] = useState<string>("");
 
   useEffect(() => {
     void getSessionSnapshot().then(setState);
@@ -71,10 +74,6 @@ export const Popup = () => {
     void chrome.runtime.sendMessage({ type: "STOP_SESSION" });
   };
 
-  // const downloadSession = () => {
-  //   void chrome.runtime.sendMessage({ type: "DOWNLOAD_SESSION" });
-  // };
-
   const openEditor = () => {
     void chrome.runtime.sendMessage({ type: "OPEN_EDITOR" });
   };
@@ -83,14 +82,7 @@ export const Popup = () => {
     const entries = await getCacheEntries();
     const text = serializeSession(entries);
     setTokenCount(estimateTokens(text));
-  };
-
-  const copyToClipboard = async () => {
-    const entries = await getCacheEntries();
-    const text = serializeSession(entries);
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setSerializedContent(text);
   };
 
   if (state.active) {
@@ -128,6 +120,10 @@ export const Popup = () => {
   }
 
   const hasData = state.pagesCount > 0;
+  const preferDownload = shouldPreferDownload(
+    state.pagesCount,
+    serializedContent.length,
+  );
 
   return (
     <div class="center">
@@ -147,24 +143,20 @@ export const Popup = () => {
 
       {hasData && (
         <div class="btn-container">
-          <button
-            type="button"
-            class="btn btn-primary"
+          <CopyButton
+            content={serializedContent}
+            label={preferDownload ? "Download Session" : "Copy to Clipboard"}
+            copiedLabel={preferDownload ? "✓ Downloaded!" : "✓ Copied!"}
+            onDownload={
+              preferDownload
+                ? () => downloadSession(serializedContent)
+                : undefined
+            }
             style={{ minWidth: "180px" }}
-            onClick={() => void copyToClipboard()}
-          >
-            {copied ? "✓ Copied!" : "Copy to Clipboard"}
-          </button>
+          />
           <button type="button" class="btn btn-secondary" onClick={openEditor}>
             Preview Data
           </button>
-          {/* <button
-            type="button"
-            class="btn btn-secondary"
-            onClick={downloadSession}
-          >
-            Download TXT
-          </button> */}
         </div>
       )}
 

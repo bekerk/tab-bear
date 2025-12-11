@@ -16,3 +16,9 @@ export type SessionState = {
   pagesCount: number;
   startTime: number | null;
 };
+
+export type CopyPrompt = {
+  id: string;
+  label: string;
+  template: (content: string) => string;
+};
