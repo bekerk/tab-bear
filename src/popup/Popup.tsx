@@ -1,6 +1,10 @@
 import { useEffect, useState } from "preact/hooks";
 import { getSessionSnapshot, getCacheEntries } from "../shared/chromeApi";
-import { serializeSession, estimateTokens, formatTokenCount } from "../shared/session";
+import {
+  serializeSession,
+  estimateTokens,
+  formatTokenCount,
+} from "../shared/session";
 import type { SessionState } from "../shared/types";
 
 const formatDuration = (startTime: number | null): string => {

@@ -46,7 +46,9 @@ export const startSession = () =>
   );
 
 export const stopSession = () =>
-  runSerialized(() => setLocal({ activeSession: false, sessionStartTime: null }));
+  runSerialized(() =>
+    setLocal({ activeSession: false, sessionStartTime: null }),
+  );
 
 export const cacheMarkdown = async (
   url: string,
@@ -60,7 +62,11 @@ export const cacheMarkdown = async (
     const currentCount =
       typeof data.pagesCount === "number" ? data.pagesCount : cache.length;
 
-    if (!data.activeSession || !tabId || markdown.length > MAX_MARKDOWN_LENGTH) {
+    if (
+      !data.activeSession ||
+      !tabId ||
+      markdown.length > MAX_MARKDOWN_LENGTH
+    ) {
       if (typeof data.pagesCount !== "number") {
         await setLocal({ pagesCount: currentCount });
       }

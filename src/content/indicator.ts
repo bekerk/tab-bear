@@ -82,10 +82,7 @@ const handleStorageChange = (
 ): void => {
   if (areaName !== "local") return;
 
-  if (
-    changes.activeSession &&
-    changes.activeSession.newValue !== true
-  ) {
+  if (changes.activeSession && changes.activeSession.newValue !== true) {
     hideIndicator();
     return;
   }

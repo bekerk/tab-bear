@@ -1,5 +1,8 @@
 import { extractMarkdown } from "./markdown";
-import { checkAndShowIndicator, subscribeToIndicatorUpdates } from "./indicator";
+import {
+  checkAndShowIndicator,
+  subscribeToIndicatorUpdates,
+} from "./indicator";
 import { getActiveSession } from "../shared/chromeApi";
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);

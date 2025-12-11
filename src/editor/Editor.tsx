@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { serializeSession, estimateTokens, formatTokenCount } from "../shared/session";
+import {
+  serializeSession,
+  estimateTokens,
+  formatTokenCount,
+} from "../shared/session";
 import { getCacheEntries } from "../shared/chromeApi";
 import type { CacheEntry } from "../shared/types";
 
@@ -95,7 +99,9 @@ export const Editor = () => {
       <div class="editor-header">
         <div class="editor-title">
           <h1>Tab Bear</h1>
-          <span class="editor-stats">{pages.length} pages • ~{formatTokenCount(tokenCount)} tokens</span>
+          <span class="editor-stats">
+            {pages.length} pages • ~{formatTokenCount(tokenCount)} tokens
+          </span>
         </div>
         <div class="editor-actions">
           <button
