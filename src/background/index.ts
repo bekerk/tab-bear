@@ -7,29 +7,31 @@ import {
   stopSession,
 } from "./session";
 
+const handleAsync = <T>(fn: () => Promise<T>): void => {
+  void fn().catch(console.error);
+};
+
 chrome.runtime.onInstalled.addListener(() => {
-  void ensureDefaults().catch(console.error);
-  void chrome.tabs.create({ url: "welcome.html" });
+  handleAsync(ensureDefaults);
+  handleAsync(() => chrome.tabs.create({ url: "welcome.html" }));
 });
 
 chrome.runtime.onMessage.addListener((msg: Message, sender) => {
   switch (msg.type) {
     case "START_SESSION":
-      void startSession().catch(console.error);
+      handleAsync(startSession);
       break;
     case "STOP_SESSION":
-      void stopSession().catch(console.error);
+      handleAsync(stopSession);
       break;
     case "DOWNLOAD_SESSION":
-      void downloadSession();
+      handleAsync(downloadSession);
       break;
     case "OPEN_EDITOR":
-      void chrome.tabs.create({ url: "editor.html" });
+      handleAsync(() => chrome.tabs.create({ url: "editor.html" }));
       break;
     case "CACHE_MARKDOWN":
-      void cacheMarkdown(msg.url, msg.markdown, sender.tab?.id).catch(
-        console.error,
-      );
+      handleAsync(() => cacheMarkdown(msg.url, msg.markdown, sender.tab?.id));
       break;
   }
 });
