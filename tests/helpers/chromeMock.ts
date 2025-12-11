@@ -69,6 +69,6 @@ export type ChromeMock = ReturnType<typeof createChromeMock>;
 export const installChromeMock = (mock: ChromeMock) => {
   globalThis.chrome = mock as unknown as typeof chrome;
   // Fresh IndexedDB per test to avoid cross-test state leakage.
-  (globalThis as any).indexedDB = new IDBFactory();
-  (globalThis as any).IDBKeyRange = IDBKeyRange;
+  (globalThis as { indexedDB: IDBFactory }).indexedDB = new IDBFactory();
+  (globalThis as { IDBKeyRange: typeof IDBKeyRange }).IDBKeyRange = IDBKeyRange;
 };

@@ -7,8 +7,8 @@ import { createChromeMock, installChromeMock } from "../helpers/chromeMock";
 const installUrlStubs = () => {
   const created: string[] = [];
   const revoked: string[] = [];
-  const originalCreate = URL.createObjectURL;
-  const originalRevoke = URL.revokeObjectURL;
+  const originalCreate = URL.createObjectURL.bind(URL);
+  const originalRevoke = URL.revokeObjectURL.bind(URL);
 
   const createObjectURL = (blob: Blob) => {
     created.push(blob.type);

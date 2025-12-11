@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach } from "bun:test";
+import { describe, test, expect } from "bun:test";
 import {
   cacheMarkdown,
   ensureDefaults,
@@ -69,7 +69,7 @@ describe("cacheMarkdown", () => {
   });
 
   test("does nothing without tab id", async () => {
-    const chromeMock = setChrome({ activeSession: true, cache: [] });
+    setChrome({ activeSession: true, cache: [] });
 
     await cacheMarkdown("https://example.com", "# title");
 
@@ -88,7 +88,7 @@ describe("cacheMarkdown", () => {
   });
 
   test("caps markdown length", async () => {
-    const chromeMock = setChrome({ activeSession: true, cache: [] });
+    setChrome({ activeSession: true, cache: [] });
     const tooLong = "x".repeat(MAX_MARKDOWN_LENGTH + 1);
 
     await cacheMarkdown("https://example.com", tooLong, 1);
@@ -124,7 +124,7 @@ describe("cacheMarkdown", () => {
   });
 
   test("caps cache size and drops oldest entries", async () => {
-    const chromeMock = setChrome({
+    setChrome({
       activeSession: true,
       cacheIndex: [],
     });
@@ -143,14 +143,14 @@ describe("cacheMarkdown", () => {
     expect(cache[0].url).toBe("https://example.com/6");
   });
 
-  test("surfaces storage errors when persisting cache", async () => {
+  test("surfaces storage errors when persisting cache", () => {
     const chromeMock = setChrome({ activeSession: true, cache: [] });
-    chromeMock.storage.local.set.callsFake((_items, callback) => {
-      chromeMock.runtime.lastError = { message: "Quota exceeded" } as any;
+    chromeMock.storage.local.set.callsFake((_items, callback?: () => void) => {
+      chromeMock.runtime.lastError = { message: "Quota exceeded" };
       callback?.();
     });
 
-    await expect(
+    expect(
       cacheMarkdown("https://example.com", "# title", 1),
     ).rejects.toThrow("Quota exceeded");
   });

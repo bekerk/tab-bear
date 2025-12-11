@@ -1,21 +1,24 @@
-import js from "@eslint/js";
+import eslint from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
 
-export default defineConfig([
+export default [
   {
-    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
-    plugins: { js },
-    extends: ["js/recommended"],
-    languageOptions: { globals: globals.browser },
+    ignores: [
+      "**/node_modules/**",
+      "**/.bun/**",
+      "**/dist/**",
+      "**/*.config.js",
+      "bundle_dist.sh",
+    ],
   },
+  eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {
-    files: ["**/*.{ts,tsx}"],
     languageOptions: {
+      globals: globals.browser,
       parserOptions: {
-        project: ["./tsconfig.json"],
+        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -24,4 +27,4 @@ export default defineConfig([
       "@typescript-eslint/require-await": "error",
     },
   },
-]);
+];

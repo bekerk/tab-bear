@@ -10,13 +10,14 @@ class FakeElement {
   id = "";
   className = "";
   dataset: Record<string, string> = {};
+  attributes: Record<string, string> = {};
   children: FakeElement[] = [];
   parent?: FakeElement;
   textContent = "";
   style: Record<string, string> = {};
   constructor(public tag: string) {}
 
-  addEventListener(_event: string, _cb: () => void) {}
+  addEventListener() {}
 
   appendChild(child: FakeElement) {
     child.parent = this;
@@ -31,7 +32,7 @@ class FakeElement {
   }
 
   setAttribute(name: string, value: string) {
-    (this as any)[name] = value;
+    this.attributes[name] = value;
   }
 
   queryById(id: string): FakeElement | null {
@@ -78,9 +79,10 @@ describe("indicator state updates", () => {
     };
     (globalThis as unknown as { location: { href: string; protocol: string } }).location =
       { href: "https://example.com", protocol: "https:" };
-    (globalThis.fetch as unknown) = async () => ({
-      text: async () => "",
-    });
+    (globalThis.fetch as unknown) = () =>
+      Promise.resolve({
+        text: () => Promise.resolve(""),
+      });
   });
 
   test("hides indicator when session deactivates", async () => {
@@ -94,7 +96,7 @@ describe("indicator state updates", () => {
     expect(document.getElementById("tab-bear-indicator")).not.toBeNull();
 
     const unsubscribe = subscribeToIndicatorUpdates();
-    chrome.storage.local.set({ activeSession: false });
+    void chrome.storage.local.set({ activeSession: false });
     unsubscribe();
 
     expect(document.getElementById("tab-bear-indicator")).toBeNull();
