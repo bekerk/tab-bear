@@ -25,6 +25,7 @@
     "@typescript-eslint/eslint-plugin": "^8.48.1",
     "@typescript-eslint/parser": "^8.48.1",
     "eslint": "^9.39.1",
+    "fake-indexeddb": "^6.0.0",
     "sinon-chrome": "^3.0.1"
   },
   "peerDependencies": {

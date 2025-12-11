@@ -1,6 +1,7 @@
 import { describe, test, expect } from "bun:test";
 import { downloadSession } from "../../src/background/download";
 import { SESSION_FILENAME } from "../../src/shared/session";
+import { setCacheEntriesStore } from "../../src/shared/cacheStore";
 import { createChromeMock, installChromeMock } from "../helpers/chromeMock";
 
 const installUrlStubs = () => {
@@ -40,12 +41,11 @@ describe("downloadSession", () => {
   });
 
   test("downloads serialized session when cache exists", async () => {
-    const chromeMock = createChromeMock({
-      cache: [
-        { url: "https://example.com", markdown: "# title", timestamp: 123 },
-      ],
-    });
+    const chromeMock = createChromeMock();
     installChromeMock(chromeMock);
+    await setCacheEntriesStore([
+      { url: "https://example.com", markdown: "# title", timestamp: 123 },
+    ]);
     const urlStubs = installUrlStubs();
 
     await downloadSession();

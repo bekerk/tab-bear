@@ -4,7 +4,7 @@ import {
   estimateTokens,
   formatTokenCount,
 } from "../shared/session";
-import { getCacheEntries } from "../shared/chromeApi";
+import { getCacheEntries, setCacheEntries } from "../shared/chromeApi";
 import type { CacheEntry } from "../shared/types";
 
 export const Editor = () => {
@@ -39,8 +39,14 @@ export const Editor = () => {
   };
 
   const saveChanges = async () => {
-    await chrome.storage.local.set({ cache: pages, pagesCount: pages.length });
-    alert("Changes saved!");
+    try {
+      await setCacheEntries(pages);
+      alert("Changes saved!");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save changes";
+      alert(message);
+    }
   };
 
   // const downloadAll = () => {

@@ -1,8 +1,7 @@
-import type { CacheEntry } from "./types";
-
 export type StorageShape = {
   activeSession?: boolean;
-  cache?: CacheEntry[];
+  // Small index of cached URLs for the in-page indicator. Full markdown lives in IndexedDB.
+  cacheIndex?: string[];
   pagesCount?: number;
   sessionStartTime?: number | null;
 };

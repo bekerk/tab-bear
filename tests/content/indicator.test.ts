@@ -1,10 +1,9 @@
 import { describe, test, expect, beforeEach } from "bun:test";
 import {
   checkAndShowIndicator,
-  isPageCached,
+  isUrlCached,
   subscribeToIndicatorUpdates,
 } from "../../src/content/indicator";
-import type { CacheEntry } from "../../src/shared/types";
 import { createChromeMock, installChromeMock } from "../helpers/chromeMock";
 
 class FakeElement {
@@ -58,21 +57,15 @@ class FakeDocument {
   }
 }
 
-const entry = (url: string): CacheEntry => ({
-  url,
-  markdown: "# title",
-  timestamp: 123,
-});
-
-describe("isPageCached", () => {
+describe("isUrlCached", () => {
   test("returns true when url is in cache", () => {
-    const cached = [entry("https://example.com/a"), entry("https://example.com/b")];
-    expect(isPageCached(cached, "https://example.com/b")).toBe(true);
+    const cached = ["https://example.com/a", "https://example.com/b"];
+    expect(isUrlCached(cached, "https://example.com/b")).toBe(true);
   });
 
   test("returns false when url missing", () => {
-    const cached = [entry("https://example.com/a")];
-    expect(isPageCached(cached, "https://example.com/other")).toBe(false);
+    const cached = ["https://example.com/a"];
+    expect(isUrlCached(cached, "https://example.com/other")).toBe(false);
   });
 });
 
@@ -93,15 +86,16 @@ describe("indicator state updates", () => {
   test("hides indicator when session deactivates", async () => {
     const chromeMock = createChromeMock({
       activeSession: true,
-      cache: [entry("https://example.com")],
+      cacheIndex: ["https://example.com"],
     });
     installChromeMock(chromeMock);
 
     await checkAndShowIndicator();
     expect(document.getElementById("tab-bear-indicator")).not.toBeNull();
 
-    await subscribeToIndicatorUpdates();
+    const unsubscribe = subscribeToIndicatorUpdates();
     chrome.storage.local.set({ activeSession: false });
+    unsubscribe();
 
     expect(document.getElementById("tab-bear-indicator")).toBeNull();
   });

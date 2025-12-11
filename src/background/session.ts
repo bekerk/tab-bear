@@ -1,6 +1,10 @@
-import { MAX_MARKDOWN_LENGTH, normalizeCacheEntries } from "../shared/session";
+import { MAX_MARKDOWN_LENGTH } from "../shared/session";
 import { getLocal, setLocal, type StorageShape } from "../shared/storage";
 import type { CacheEntry } from "../shared/types";
+import {
+  getCacheEntriesStore,
+  setCacheEntriesStore,
+} from "../shared/cacheStore";
 
 const MAX_CACHE_ENTRIES = 100;
 
@@ -20,14 +24,14 @@ const trimCache = (cache: CacheEntry[]): CacheEntry[] => {
 export const ensureDefaults = async () => {
   const data = await getLocal([
     "activeSession",
-    "cache",
+    "cacheIndex",
     "pagesCount",
     "sessionStartTime",
   ]);
 
   const updates: Partial<StorageShape> = {};
   if (typeof data.activeSession !== "boolean") updates.activeSession = false;
-  if (!Array.isArray(data.cache)) updates.cache = [];
+  if (!Array.isArray(data.cacheIndex)) updates.cacheIndex = [];
   if (typeof data.pagesCount !== "number") updates.pagesCount = 0;
   if (typeof data.sessionStartTime !== "number")
     updates.sessionStartTime = null;
@@ -37,12 +41,15 @@ export const ensureDefaults = async () => {
 
 export const startSession = () =>
   runSerialized(() =>
-    setLocal({
-      activeSession: true,
-      sessionStartTime: Date.now(),
-      cache: [],
-      pagesCount: 0,
-    }),
+    Promise.all([
+      setCacheEntriesStore([]),
+      setLocal({
+        activeSession: true,
+        sessionStartTime: Date.now(),
+        cacheIndex: [],
+        pagesCount: 0,
+      }),
+    ]).then(() => undefined),
   );
 
 export const stopSession = () =>
@@ -56,11 +63,17 @@ export const cacheMarkdown = async (
   tabId?: number,
 ) =>
   runSerialized(async () => {
-    const data = await getLocal(["activeSession", "cache", "pagesCount"]);
+    const data = await getLocal(["activeSession", "pagesCount", "cacheIndex"]);
 
-    const cache = normalizeCacheEntries(data.cache);
+    const cache = await getCacheEntriesStore();
     const currentCount =
       typeof data.pagesCount === "number" ? data.pagesCount : cache.length;
+    if (!Array.isArray(data.cacheIndex)) {
+      await setLocal({
+        cacheIndex: cache.map((e) => e.url),
+        pagesCount: currentCount,
+      });
+    }
 
     if (
       !data.activeSession ||
@@ -75,5 +88,9 @@ export const cacheMarkdown = async (
 
     cache.push({ url, markdown, timestamp: Date.now() });
     const nextCache = trimCache(cache);
-    await setLocal({ cache: nextCache, pagesCount: nextCache.length });
+    await setCacheEntriesStore(nextCache);
+    await setLocal({
+      cacheIndex: nextCache.map((e) => e.url),
+      pagesCount: nextCache.length,
+    });
   });

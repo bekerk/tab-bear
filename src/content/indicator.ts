@@ -1,10 +1,10 @@
-import { getActiveSession, getCacheEntries } from "../shared/chromeApi";
-import type { CacheEntry } from "../shared/types";
+import { getActiveSession, getCacheIndex } from "../shared/chromeApi";
 
 const INDICATOR_ID = "tab-bear-indicator";
 const INDICATOR_STYLES_ID = "tab-bear-indicator-styles";
 type IndicatorState = "active" | "pending";
 type StorageChangeMap = Record<string, chrome.storage.StorageChange>;
+type Unsubscribe = () => void;
 
 const createIndicatorElement = (state: IndicatorState): HTMLDivElement => {
   const container = document.createElement("div");
@@ -73,8 +73,8 @@ export const hideIndicator = (): void => {
   removeIndicator();
 };
 
-export const isPageCached = (cache: CacheEntry[], url: string): boolean =>
-  cache.some((entry) => entry.url === url);
+export const isUrlCached = (cacheIndex: string[], url: string): boolean =>
+  cacheIndex.includes(url);
 
 const handleStorageChange = (
   changes: StorageChangeMap,
@@ -87,15 +87,15 @@ const handleStorageChange = (
     return;
   }
 
-  if (changes.cache || changes.activeSession) {
+  if (changes.cacheIndex || changes.activeSession) {
     void checkAndShowIndicator();
   }
 };
 
 export const checkAndShowIndicator = async (): Promise<void> => {
-  const [active, cache] = await Promise.all([
+  const [active, cacheIndex] = await Promise.all([
     getActiveSession(),
-    getCacheEntries(),
+    getCacheIndex(),
   ]);
 
   if (!active) {
@@ -103,7 +103,7 @@ export const checkAndShowIndicator = async (): Promise<void> => {
     return;
   }
 
-  const state: IndicatorState = isPageCached(cache, location.href)
+  const state: IndicatorState = isUrlCached(cacheIndex, location.href)
     ? "active"
     : "pending";
 
@@ -122,6 +122,11 @@ export const checkAndShowIndicator = async (): Promise<void> => {
   }
 };
 
-export const subscribeToIndicatorUpdates = (): void => {
+export const subscribeToIndicatorUpdates = (): Unsubscribe => {
   chrome.storage.onChanged.addListener(handleStorageChange);
+  return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+};
+
+export const deactivateIndicator = (): void => {
+  hideIndicator();
 };

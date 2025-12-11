@@ -1,8 +1,8 @@
 import { SESSION_FILENAME, serializeSession } from "../shared/session";
-import { getCacheEntries } from "../shared/chromeApi";
+import { getCacheEntriesStore } from "../shared/cacheStore";
 
 export const downloadSession = async () => {
-  const cache = await getCacheEntries();
+  const cache = await getCacheEntriesStore();
 
   if (cache.length === 0) return;
 

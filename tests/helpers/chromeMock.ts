@@ -1,4 +1,5 @@
 import sinonChrome from "sinon-chrome";
+import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
 
 type StorageData = Record<string, unknown>;
 type StorageChange = { oldValue: unknown; newValue: unknown };
@@ -67,4 +68,7 @@ export type ChromeMock = ReturnType<typeof createChromeMock>;
 
 export const installChromeMock = (mock: ChromeMock) => {
   globalThis.chrome = mock as unknown as typeof chrome;
+  // Fresh IndexedDB per test to avoid cross-test state leakage.
+  (globalThis as any).indexedDB = new IDBFactory();
+  (globalThis as any).IDBKeyRange = IDBKeyRange;
 };
