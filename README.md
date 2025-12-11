@@ -1,5 +1,5 @@
 # tab-bear
 
 <div align="center">
-    <img src="./assets/tab-bear.png" width="300" />
+    <img src="./assets/tab-bear-munch.png" width="512" />
 </div>

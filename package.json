@@ -4,10 +4,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun build src/background.ts src/content.ts src/popup.tsx --outdir dist --target=browser",
-    "dev": "bun build src/background.ts src/content.ts src/popup.tsx --outdir dist --watch --target=browser",
+    "build": "bun build src/background/index.ts src/content/index.ts src/popup/index.tsx src/editor/index.tsx --outdir dist --target=browser",
+    "dev": "bun build src/background/index.ts src/content/index.ts src/popup/index.tsx --outdir dist --watch --target=browser",
     "bundle": "./bundle_dist.sh",
-    "lint": "bunx eslint src --ext .ts",
+    "lint": "bunx eslint src --ext .ts,.tsx",
+    "test": "bun test",
     "format": "bunx prettier --write src",
     "format:check": "bunx prettier --check src"
   },
@@ -17,12 +18,14 @@
     "turndown": "^7.2.2"
   },
   "devDependencies": {
-    "eslint": "^9.39.1",
     "@types/bun": "latest",
     "@types/chrome": "^0.1.32",
+    "@types/sinon-chrome": "^2.2.16",
     "@types/turndown": "^5.0.6",
     "@typescript-eslint/eslint-plugin": "^8.48.1",
-    "@typescript-eslint/parser": "^8.48.1"
+    "@typescript-eslint/parser": "^8.48.1",
+    "eslint": "^9.39.1",
+    "sinon-chrome": "^3.0.1"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"

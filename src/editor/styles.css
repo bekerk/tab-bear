@@ -1,0 +1,211 @@
+@import url("../shared/colors.css");
+@import url("../shared/base.css");
+
+body {
+  background: var(--md-sys-color-surface-container);
+  height: 100vh;
+  overflow: hidden;
+}
+
+.editor-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  margin-bottom: 16px;
+}
+
+.editor-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.editor-title h1 {
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 36px;
+  letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+}
+
+.editor-title img {
+  width: 48px;
+  height: 48px;
+}
+
+.editor-stats {
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-left: 8px;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.tabs-bar {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  background: var(--md-sys-color-surface);
+  border-radius: var(--md-sys-shape-corner-large)
+    var(--md-sys-shape-corner-large) 0 0;
+  padding: 4px 4px 0 4px;
+}
+
+.tab {
+  min-width: 90px;
+  height: 48px;
+  padding: 0 16px;
+  background: transparent;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-medium)
+    var(--md-sys-shape-corner-medium) 0 0;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.1px;
+  color: var(--md-sys-color-on-surface-variant);
+
+  cursor: pointer;
+  position: relative;
+
+  transition:
+    background-color var(--md-sys-motion-duration-short)
+      var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short)
+      var(--md-sys-motion-easing-standard);
+}
+
+.tab:hover {
+  background: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) 8%,
+    transparent
+  );
+}
+
+.tab-active {
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-primary);
+}
+
+.tab-active:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.page-card {
+  background: var(--md-sys-color-surface);
+  border-radius: 0 0 var(--md-sys-shape-corner-large)
+    var(--md-sys-shape-corner-large);
+  box-shadow: var(--md-sys-elevation-1);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--md-sys-color-surface-container);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  flex-shrink: 0;
+}
+
+.page-url {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-url:hover {
+  text-decoration: underline;
+}
+
+.editor-wrapper {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.line-numbers {
+  padding: 20px 16px;
+  background: var(--md-sys-color-surface-container);
+  border-right: 1px solid var(--md-sys-color-outline-variant);
+  font-family: "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+
+  text-align: right;
+  user-select: none;
+  overflow: hidden;
+  min-width: 64px;
+}
+
+.page-textarea {
+  flex: 1;
+  padding: 20px 24px;
+  border: none;
+  font-family: "Roboto Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  color: var(--md-sys-color-on-surface);
+
+  resize: none;
+  background: var(--md-sys-color-surface);
+  overflow: auto;
+}
+
+.page-textarea:focus {
+  outline: none;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 32px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.empty-state h2 {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  letter-spacing: 0;
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.5px;
+}

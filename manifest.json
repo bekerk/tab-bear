@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "description": "Tab Bear is a cool secret thing...",
     "background": {
-        "service_worker": "background.js",
+        "service_worker": "background/index.js",
         "type": "module"
     },
     "permissions": [
@@ -18,18 +18,32 @@
                 "<all_urls>"
             ],
             "js": [
-                "content.js"
+                "content/index.js"
             ]
         }
     ],
     "action": {
+        "default_icon": {
+            "16": "assets/tab-bear-16.png",
+            "48": "assets/tab-bear-48.png",
+            "128": "assets/tab-bear-128.png"
+        },
         "default_popup": "popup.html"
+    },
+    "icons": {
+        "16": "assets/tab-bear-16.png",
+        "48": "assets/tab-bear-48.png",
+        "128": "assets/tab-bear-128.png"
     },
     "web_accessible_resources": [
         {
-            "resources": ["welcome.html"],
+            "resources": [
+                "welcome.html",
+                "editor.html",
+                "assets/tab-bear-munch.png",
+                "content/indicator.css"
+            ],
             "matches": ["<all_urls>"]
         }
-    ],
-    "icons": {}
+    ]
 }
