@@ -124,8 +124,7 @@ export const Editor = () => {
       <div class="editor-container">
         <div class="editor-header">
           <div class="editor-title">
-            <img src="assets/tab-bear-munch.png" alt="Tab Bear" />
-            <h1>Tab Bear Editor</h1>
+            <h1>Tab Bear</h1>
           </div>
         </div>
         <div class="empty-state">
