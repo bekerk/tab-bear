@@ -11,11 +11,21 @@ export const Editor = () => {
   const [pages, setPages] = useState<CacheEntry[]>([]);
   const [activeTab, setActiveTab] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
+  const saveTimerRef = useRef<number | null>(null);
+  const saveSeqRef = useRef(0);
+  const lastPersistedSnapshotRef = useRef<string>("");
 
   useEffect(() => {
-    void getCacheEntries().then(setPages);
+    void getCacheEntries().then((entries) => {
+      // Avoid immediately re-writing whatever we just read.
+      lastPersistedSnapshotRef.current = JSON.stringify(entries);
+      setPages(entries);
+    });
   }, []);
 
   const updatePage = (index: number, markdown: string) => {
@@ -38,16 +48,46 @@ export const Editor = () => {
     });
   };
 
-  const saveChanges = async () => {
-    try {
-      await setCacheEntries(pages);
-      alert("Changes saved!");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to save changes";
-      alert(message);
+  // Auto-save on every edit (debounced) so there's no need for manual saving.
+  useEffect(() => {
+    if (pages.length === 0) return;
+
+    const snapshot = JSON.stringify(pages);
+    if (snapshot === lastPersistedSnapshotRef.current) return;
+
+    if (saveTimerRef.current !== null) {
+      window.clearTimeout(saveTimerRef.current);
     }
-  };
+
+    const seq = ++saveSeqRef.current;
+    setSaveStatus("saving");
+
+    saveTimerRef.current = window.setTimeout(() => {
+      void setCacheEntries(pages)
+        .then(() => {
+          // Ignore stale saves if newer edits happened since this was scheduled.
+          if (seq !== saveSeqRef.current) return;
+          lastPersistedSnapshotRef.current = snapshot;
+          setSaveStatus("saved");
+          window.setTimeout(() => {
+            if (seq !== saveSeqRef.current) return;
+            setSaveStatus("idle");
+          }, 1200);
+        })
+        .catch((err) => {
+          if (seq !== saveSeqRef.current) return;
+          console.error("Failed to auto-save editor changes", err);
+          setSaveStatus("error");
+        });
+    }, 400);
+
+    return () => {
+      if (saveTimerRef.current !== null) {
+        window.clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+    };
+  }, [pages]);
 
   // const downloadAll = () => {
   //   if (pages.length === 0) return;
@@ -110,6 +150,26 @@ export const Editor = () => {
           </span>
         </div>
         <div class="editor-actions">
+          <span
+            class={`save-status ${
+              saveStatus === "error"
+                ? "error"
+                : saveStatus === "saving"
+                  ? "saving"
+                  : saveStatus === "saved"
+                    ? "saved"
+                    : ""
+            }`}
+            aria-live="polite"
+          >
+            {saveStatus === "saving"
+              ? "Saving…"
+              : saveStatus === "saved"
+                ? "Saved"
+                : saveStatus === "error"
+                  ? "Save failed"
+                  : ""}
+          </span>
           <button
             type="button"
             class="btn btn-primary"
@@ -121,13 +181,6 @@ export const Editor = () => {
           {/* <button type="button" class="btn btn-secondary" onClick={downloadAll}>
             Download All
           </button> */}
-          <button
-            type="button"
-            class="btn btn-secondary"
-            onClick={() => void saveChanges()}
-          >
-            Save Changes
-          </button>
         </div>
       </div>
 

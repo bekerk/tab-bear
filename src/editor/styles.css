@@ -52,6 +52,26 @@ body {
 .editor-actions {
   display: flex;
   gap: 12px;
+  align-items: center;
+}
+
+.save-status {
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant);
+  min-width: 78px;
+  text-align: left;
+}
+
+.save-status.saving {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.save-status.saved {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.save-status.error {
+  color: var(--md-sys-color-error);
 }
 
 .tabs-bar {
