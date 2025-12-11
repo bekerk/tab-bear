@@ -103,37 +103,57 @@ export const Editor = () => {
     if (lineNumbersRef.current) lineNumbersRef.current.scrollTop = 0;
   }, [activeTab]);
 
-  // Handle Cmd+C / Ctrl+C keyboard shortcut
+  const handleCopyShortcut = (event: KeyboardEvent) => {
+    if (pages.length === 0) return;
+
+    // Don't override copy if user has text selected
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    void (async () => {
+      try {
+        const text = serializeSession(pages);
+        await navigator.clipboard.writeText(text);
+        setShowToast(true);
+        setTimeout(() => {
+          setShowToast(false);
+        }, 2000);
+      } catch (error) {
+        console.error("Failed to copy to clipboard:", error);
+      }
+    })();
+  };
+
+  const handleSaveShortcut = (event: KeyboardEvent) => {
+    if (pages.length === 0) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const content = serializeSession(pages);
+    downloadSession(content);
+  };
+
+  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyboardShortcut = (event: KeyboardEvent) => {
       const isCopyShortcut =
         event.key === "c" && (event.metaKey || event.ctrlKey);
+      const isSaveShortcut =
+        event.key === "s" && (event.metaKey || event.ctrlKey);
 
-      if (!isCopyShortcut || pages.length === 0) {
-        return;
+      if (isCopyShortcut) {
+        handleCopyShortcut(event);
       }
 
-      // Don't override copy if user has text selected
-      const selection = window.getSelection();
-      if (selection && selection.toString().length > 0) {
-        return;
+      if (isSaveShortcut) {
+        handleSaveShortcut(event);
       }
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      void (async () => {
-        try {
-          const text = serializeSession(pages);
-          await navigator.clipboard.writeText(text);
-          setShowToast(true);
-          setTimeout(() => {
-            setShowToast(false);
-          }, 2000);
-        } catch (error) {
-          console.error("Failed to copy to clipboard:", error);
-        }
-      })();
     };
 
     document.addEventListener("keydown", handleKeyboardShortcut);
