@@ -6,6 +6,7 @@
       "name": "tab-bear",
       "dependencies": {
         "@material/web": "^2.4.1",
+        "@mozilla/readability": "^0.6.0",
         "preact": "^10.28.0",
         "turndown": "^7.2.2",
       },
@@ -59,6 +60,8 @@
     "@material/web": ["@material/web@2.4.1", "", { "dependencies": { "lit": "^2.8.0 || ^3.0.0", "tslib": "^2.4.0" } }, "sha512-0sk9t25acJ72Qv3r0n9r0lgDbPaAKnpm0p+QmEAAwYyZomHxuVbgrrAdtNXaRm7jFyGh+WsTr8bhtvCnpPRFjw=="],
 
     "@mixmark-io/domino": ["@mixmark-io/domino@2.2.0", "", {}, "sha512-Y28PR25bHXUg88kCV7nivXrP2Nj2RueZ3/l/jdx6J9f8J4nsEGcgX0Qe6lt7Pa+J79+kPiJU3LguR6O/6zrLOw=="],
+
+    "@mozilla/readability": ["@mozilla/readability@0.6.0", "", {}, "sha512-juG5VWh4qAivzTAeMzvY9xs9HY5rAcr2E4I7tiSSCokRFi7XIZCAu92ZkSTsIj1OPceCifL3cpfteP3pDT9/QQ=="],
 
     "@sinonjs/commons": ["@sinonjs/commons@1.8.6", "", { "dependencies": { "type-detect": "4.0.8" } }, "sha512-Ky+XkAkqPZSm3NLBeUng77EBQl3cmeJhITaGHdYH8kjVB+aun3S4XBRti2zt17mtt0mIUDiNxYeoJm6drVvBJQ=="],
 

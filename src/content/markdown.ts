@@ -1,4 +1,5 @@
 import TurndownService from "turndown";
+import { Readability } from "@mozilla/readability";
 
 const turndown = new TurndownService({
   headingStyle: "atx",
@@ -28,10 +29,16 @@ export const isValidMarkdownLine = (line: string): boolean => {
 };
 
 export const extractMarkdown = (): string => {
-  const markdown = turndown.turndown(document.body);
+  const documentClone = document.cloneNode(true) as Document;
+  const reader = new Readability(documentClone);
+  const article = reader.parse();
+
+  const content = article?.content || document.body.innerHTML;
+  const title = article?.title || document.title;
+  const markdown = turndown.turndown(content);
 
   const lines = markdown.split("\n");
   const cleaned = lines.filter(isValidMarkdownLine);
 
-  return `# ${document.title}\n\n${cleaned.join("\n")}`;
+  return `# ${title}\n\n${cleaned.join("\n")}`;
 };
